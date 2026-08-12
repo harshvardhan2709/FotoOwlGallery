@@ -23,4 +23,6 @@ export interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   loadSession: () => Promise<void>;
+  updateProfile: (updatedData: Partial<User>) => Promise<void>;
 }
+

@@ -1,9 +1,8 @@
 import { create } from "zustand";
-
 import { storage } from "@/services/storage";
 import { AuthState, User } from "@/types/auth";
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
@@ -75,5 +74,21 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
       });
     }
+  },
+
+  updateProfile: async (updatedData: Partial<User>) => {
+    const currentUser = get().user;
+    if (!currentUser) return;
+
+    const newUser: User = {
+      ...currentUser,
+      ...updatedData,
+    };
+
+    await storage.setUser(newUser);
+
+    set({
+      user: newUser,
+    });
   },
 }));
