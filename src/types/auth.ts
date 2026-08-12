@@ -10,6 +10,10 @@ export interface User {
   password: string;
 }
 
+export interface RegistrationData extends User {
+  confirmPassword: string;
+}
+
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
