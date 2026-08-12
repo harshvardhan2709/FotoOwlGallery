@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -107,81 +106,96 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
+        className="flex-1"
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Profile Header Card */}
-          <View style={styles.avatarCard}>
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarInitials}>
+          {/* Profile Hero Card */}
+          <View className="bg-slate-900 rounded-2xl p-5 items-center mb-4 shadow-md shadow-slate-900/10 relative overflow-hidden">
+            <View className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 items-center justify-center mb-3">
+              <Text className="text-white text-xl font-black">
                 {getInitials(user?.fullName || 'User')}
               </Text>
             </View>
 
-            <Text style={styles.userName}>{user?.fullName || 'User Name'}</Text>
-            <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
+            <Text className="text-xl font-black text-white tracking-tight">{user?.fullName || 'User Name'}</Text>
+            <Text className="text-sm font-medium text-slate-400 mt-0.5">{user?.email || 'user@example.com'}</Text>
 
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{favoritesCount}</Text>
-                <Text style={styles.statLabel}>Favorites</Text>
+            <View className="flex-row items-center mt-4 pt-3 border-t border-white/10 w-full">
+              <View className="flex-1 items-center">
+                <Text className="text-xl font-extrabold text-white">{favoritesCount}</Text>
+                <Text className="text-xs font-semibold text-slate-400 mt-0.5">Favorites</Text>
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{user?.city || 'N/A'}</Text>
-                <Text style={styles.statLabel}>Location</Text>
+              <View className="w-px h-6 bg-white/20" />
+              <View className="flex-1 items-center">
+                <Text className="text-xl font-extrabold text-white">{user?.city || 'N/A'}</Text>
+                <Text className="text-xs font-semibold text-slate-400 mt-0.5">City</Text>
+              </View>
+              <View className="w-px h-6 bg-white/20" />
+              <View className="flex-1 items-center">
+                <View className="flex-row items-center gap-1">
+                  <View className="w-2 h-2 rounded-full bg-emerald-400 mr-1" />
+                  <Text className="text-sm font-extrabold text-emerald-400">Active</Text>
+                </View>
+                <Text className="text-xs font-semibold text-slate-400 mt-0.5">Status</Text>
               </View>
             </View>
           </View>
 
-          {/* User Details & Edit Form */}
-          <View style={styles.detailsCard}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Profile Details</Text>
+          {/* User Details Card */}
+          <View className="bg-white rounded-2xl p-4 mb-4 border border-slate-200/80 shadow-sm">
+            <View className="flex-row justify-between items-center mb-3 pb-2.5 border-b border-slate-100">
+              <Text className="text-lg font-black text-slate-900">Personal Account Info</Text>
               {!isEditing && (
-                <TouchableOpacity onPress={handleStartEditing} style={styles.editButton}>
-                  <Ionicons name="create-outline" size={18} color="#111111" />
-                  <Text style={styles.editButtonText}>Edit</Text>
+                <TouchableOpacity
+                  onPress={handleStartEditing}
+                  className="flex-row items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-xl"
+                >
+                  <Ionicons name="create-outline" size={16} color="#0F172A" />
+                  <Text className="text-xs font-bold text-slate-900">Edit Profile</Text>
                 </TouchableOpacity>
               )}
             </View>
 
             {isEditing ? (
               /* Editable Form */
-              <View style={styles.formContainer}>
-                <Text style={styles.label}>Full Name</Text>
+              <View className="gap-3">
+                <Text className="text-sm font-bold text-slate-700">Full Name</Text>
                 <TextInput
-                  style={styles.input}
+                  className="border border-slate-200 rounded-xl px-3.5 py-3 text-sm font-medium text-slate-900 bg-slate-50"
                   value={form.fullName}
                   onChangeText={(val) => setForm((prev) => ({ ...prev, fullName: val }))}
                   placeholder="Enter full name"
                 />
 
-                <Text style={styles.label}>Gender</Text>
-                <View style={styles.genderRow}>
-                  {(['Male', 'Female', 'Other'] as Gender[]).map((g) => (
-                    <Pressable
-                      key={g}
-                      style={styles.genderOption}
-                      onPress={() => setForm((prev) => ({ ...prev, gender: g }))}
-                    >
-                      <View style={styles.radioOuter}>
-                        {form.gender === g && <View style={styles.radioInner} />}
-                      </View>
-                      <Text style={styles.genderText}>{g}</Text>
-                    </Pressable>
-                  ))}
+                <Text className="text-sm font-bold text-slate-700">Gender</Text>
+                <View className="flex-row gap-3">
+                  {(['Male', 'Female', 'Other'] as Gender[]).map((g) => {
+                    const selected = form.gender === g;
+                    return (
+                      <Pressable
+                        key={g}
+                        className={`flex-1 flex-row items-center justify-center gap-2 py-2.5 rounded-xl border ${
+                          selected ? 'bg-slate-900 border-slate-900' : 'bg-slate-50 border-slate-200'
+                        }`}
+                        onPress={() => setForm((prev) => ({ ...prev, gender: g }))}
+                      >
+                        <Text className={`text-xs font-bold ${selected ? 'text-white' : 'text-slate-700'}`}>
+                          {g}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                 </View>
 
-                <Text style={styles.label}>Mobile Number</Text>
+                <Text className="text-sm font-bold text-slate-700">Mobile Number</Text>
                 <TextInput
-                  style={styles.input}
+                  className="border border-slate-200 rounded-xl px-3.5 py-3 text-sm font-medium text-slate-900 bg-slate-50"
                   value={form.mobile}
                   onChangeText={(val) =>
                     setForm((prev) => ({ ...prev, mobile: val.replace(/[^0-9]/g, '') }))
@@ -191,88 +205,124 @@ export default function ProfileScreen() {
                   placeholder="10-digit mobile number"
                 />
 
-                <Text style={styles.label}>Address</Text>
+                <Text className="text-sm font-bold text-slate-700">Address</Text>
                 <TextInput
-                  style={[styles.input, styles.multilineInput]}
+                  className="border border-slate-200 rounded-xl px-3.5 py-3 h-22 text-sm font-medium text-slate-900 bg-slate-50"
+                  style={{ textAlignVertical: 'top' }}
                   value={form.address}
                   onChangeText={(val) => setForm((prev) => ({ ...prev, address: val }))}
                   multiline
-                  numberOfLines={2}
+                  numberOfLines={3}
                   placeholder="Enter address"
                 />
 
-                <Text style={styles.label}>City</Text>
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={form.city}
-                    onValueChange={(val) => setForm((prev) => ({ ...prev, city: val }))}
-                  >
-                    {CITIES.map((c) => (
-                      <Picker.Item key={c} label={c} value={c} />
-                    ))}
-                  </Picker>
+                {/* City Selection */}
+                <View className="flex-row justify-between items-center mt-1">
+                  <Text className="text-sm font-bold text-slate-700">City</Text>
+                  {form.city ? (
+                    <View className="flex-row items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <Ionicons name="checkmark-circle" size={13} color="#059669" />
+                      <Text className="text-xs font-bold text-emerald-800">Selected: {form.city}</Text>
+                    </View>
+                  ) : null}
                 </View>
 
-                <View style={styles.editActionRow}>
+                <View className="flex-row flex-wrap gap-2 mt-1">
+                  {CITIES.map((c) => {
+                    const isSelected = form.city === c;
+                    return (
+                      <TouchableOpacity
+                        key={c}
+                        className={`flex-row items-center gap-1.5 px-3 py-2 rounded-xl border ${
+                          isSelected ? 'bg-slate-900 border-slate-900' : 'bg-slate-50 border-slate-200'
+                        }`}
+                        onPress={() => setForm((prev) => ({ ...prev, city: c }))}
+                      >
+                        <Ionicons
+                          name={isSelected ? 'checkmark-circle' : 'location-outline'}
+                          size={14}
+                          color={isSelected ? '#FFFFFF' : '#64748B'}
+                        />
+                        <Text className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-700'}`}>
+                          {c}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                <View className="flex-row gap-3 mt-5">
                   <TouchableOpacity
-                    style={styles.cancelButton}
+                    className="flex-1 py-3 rounded-xl border border-slate-300 items-center"
                     onPress={() => setIsEditing(false)}
                     disabled={isSaving}
                   >
-                    <Text style={styles.cancelText}>Cancel</Text>
+                    <Text className="text-slate-700 text-sm font-bold">Cancel</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.saveButton}
+                    className="flex-1 py-3 rounded-xl bg-slate-900 items-center shadow-sm"
                     onPress={handleSaveProfile}
                     disabled={isSaving}
                   >
-                    <Text style={styles.saveText}>
-                      {isSaving ? 'Saving...' : 'Save Changes'}
-                    </Text>
+                    {isSaving ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                    ) : (
+                      <Text className="text-white text-sm font-bold">Save Changes</Text>
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
             ) : (
-              /* Read-only List */
-              <View style={styles.infoList}>
-                <View style={styles.infoRow}>
-                  <Ionicons name="mail-outline" size={20} color="#666" style={styles.infoIcon} />
-                  <View>
-                    <Text style={styles.infoLabel}>Email</Text>
-                    <Text style={styles.infoValue}>{user?.email || 'N/A'}</Text>
+              /* Read-only Info List */
+              <View className="gap-4">
+                <View className="flex-row items-center gap-3.5">
+                  <View className="w-9 h-9 rounded-xl bg-slate-100 items-center justify-center">
+                    <Ionicons name="mail-outline" size={18} color="#475569" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-semibold text-slate-400">Email Address</Text>
+                    <Text className="text-base font-bold text-slate-900 mt-0.5">{user?.email || 'N/A'}</Text>
                   </View>
                 </View>
 
-                <View style={styles.infoRow}>
-                  <Ionicons name="call-outline" size={20} color="#666" style={styles.infoIcon} />
-                  <View>
-                    <Text style={styles.infoLabel}>Mobile</Text>
-                    <Text style={styles.infoValue}>{user?.mobile || 'N/A'}</Text>
+                <View className="flex-row items-center gap-3.5">
+                  <View className="w-9 h-9 rounded-xl bg-slate-100 items-center justify-center">
+                    <Ionicons name="call-outline" size={18} color="#475569" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-semibold text-slate-400">Mobile Number</Text>
+                    <Text className="text-base font-bold text-slate-900 mt-0.5">{user?.mobile || 'N/A'}</Text>
                   </View>
                 </View>
 
-                <View style={styles.infoRow}>
-                  <Ionicons name="person-outline" size={20} color="#666" style={styles.infoIcon} />
-                  <View>
-                    <Text style={styles.infoLabel}>Gender</Text>
-                    <Text style={styles.infoValue}>{user?.gender || 'N/A'}</Text>
+                <View className="flex-row items-center gap-3.5">
+                  <View className="w-9 h-9 rounded-xl bg-slate-100 items-center justify-center">
+                    <Ionicons name="person-outline" size={18} color="#475569" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-semibold text-slate-400">Gender</Text>
+                    <Text className="text-base font-bold text-slate-900 mt-0.5">{user?.gender || 'N/A'}</Text>
                   </View>
                 </View>
 
-                <View style={styles.infoRow}>
-                  <Ionicons name="location-outline" size={20} color="#666" style={styles.infoIcon} />
-                  <View>
-                    <Text style={styles.infoLabel}>City</Text>
-                    <Text style={styles.infoValue}>{user?.city || 'N/A'}</Text>
+                <View className="flex-row items-center gap-3.5">
+                  <View className="w-9 h-9 rounded-xl bg-slate-100 items-center justify-center">
+                    <Ionicons name="location-outline" size={18} color="#475569" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-semibold text-slate-400">City</Text>
+                    <Text className="text-base font-bold text-slate-900 mt-0.5">{user?.city || 'N/A'}</Text>
                   </View>
                 </View>
 
-                <View style={styles.infoRow}>
-                  <Ionicons name="home-outline" size={20} color="#666" style={styles.infoIcon} />
-                  <View>
-                    <Text style={styles.infoLabel}>Address</Text>
-                    <Text style={styles.infoValue}>{user?.address || 'N/A'}</Text>
+                <View className="flex-row items-center gap-3.5">
+                  <View className="w-9 h-9 rounded-xl bg-slate-100 items-center justify-center">
+                    <Ionicons name="home-outline" size={18} color="#475569" />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs font-semibold text-slate-400">Address</Text>
+                    <Text className="text-base font-bold text-slate-900 mt-0.5">{user?.address || 'N/A'}</Text>
                   </View>
                 </View>
               </View>
@@ -280,238 +330,15 @@ export default function ProfileScreen() {
           </View>
 
           {/* Logout Button */}
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <TouchableOpacity
+            className="flex-row items-center justify-center gap-2 bg-red-50 border border-red-200/80 py-4 rounded-2xl shadow-sm"
+            onPress={handleLogout}
+          >
             <Ionicons name="log-out-outline" size={20} color="#E53935" />
-            <Text style={styles.logoutText}>Log Out</Text>
+            <Text className="text-red-600 text-sm font-bold">Log Out of Account</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  avatarCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  avatarCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#111111',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  avatarInitials: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  userName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#111111',
-  },
-  userEmail: {
-    fontSize: 14,
-    color: '#666666',
-    marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#EDF2F7',
-    width: '100%',
-  },
-  statBox: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111111',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#718096',
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: '#E2E8F0',
-  },
-  detailsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111111',
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  editButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111111',
-  },
-  infoList: {
-    gap: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  infoIcon: {
-    width: 24,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: '#718096',
-  },
-  infoValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1A202C',
-    marginTop: 2,
-  },
-  formContainer: {
-    gap: 12,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#2D3748',
-    marginTop: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#CBD5E0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: '#1A202C',
-    backgroundColor: '#FFFFFF',
-  },
-  multilineInput: {
-    height: 70,
-    paddingTop: 10,
-  },
-  genderRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  genderOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  radioOuter: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 2,
-    borderColor: '#2D3748',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 6,
-  },
-  radioInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#111111',
-  },
-  genderText: {
-    fontSize: 14,
-    color: '#2D3748',
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#CBD5E0',
-    borderRadius: 8,
-    overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-  },
-  editActionRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#CBD5E0',
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: '#4A5568',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#111111',
-    alignItems: 'center',
-  },
-  saveText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#FFF5F5',
-    borderWidth: 1,
-    borderColor: '#FEB2B2',
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  logoutText: {
-    color: '#E53935',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});

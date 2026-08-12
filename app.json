@@ -34,7 +34,14 @@
           "imageWidth": 76
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow FotoOwl to save photos to your gallery.",
+          "savePhotosPermission": "Allow FotoOwl to save photos to your gallery."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

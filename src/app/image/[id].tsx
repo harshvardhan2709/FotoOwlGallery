@@ -3,24 +3,23 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system/legacy';
-import * as MediaLibrary from 'expo-media-library';
+import * as MediaLibrary from 'expo-media-library/legacy';
 import * as Sharing from 'expo-sharing';
-
 
 import { api } from '@/services/api';
 import { useGalleryStore } from '@/store/galleryStore';
 import { PicsumImage } from '@/types/image';
+import { FullScreenImageViewer } from '@/components/FullScreenImageViewer';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -31,19 +30,20 @@ export default function ImageDetailsScreen() {
   const [imageData, setImageData] = useState<PicsumImage | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [imgLoading, setImgLoading] = useState(true);
+  const [imgError, setImgError] = useState(false);
 
   const favorited = id ? isFavorite(id) : false;
 
   useEffect(() => {
     if (!id) return;
 
-    // Check if we already have the image in our gallery store
     const existing = images.find((img) => img.id === id);
     if (existing) {
       setImageData(existing);
       setLoading(false);
     } else {
-      // Fetch directly from API
       setLoading(true);
       api
         .fetchImageById(id)
@@ -65,35 +65,41 @@ export default function ImageDetailsScreen() {
     try {
       setDownloading(true);
 
-      const imageUrl = `https://picsum.photos/id/${imageData.id}/${imageData.width}/${imageData.height}`;
+      const downloadUrl = imageData.download_url || `https://picsum.photos/id/${imageData.id}/1200/800`;
       const fileUri = `${FileSystem.documentDirectory}fotoowl_${imageData.id}.jpg`;
 
-      // 1. Download image file to local cache
-      const downloadResult = await FileSystem.downloadAsync(imageUrl, fileUri);
+      const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
+      
+      const permission = await MediaLibrary.requestPermissionsAsync();
 
-      // 2. Request Media Library permission to save image to device gallery
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-
-      if (status === 'granted') {
+      if (permission.granted) {
         await MediaLibrary.createAssetAsync(downloadResult.uri);
         Alert.alert(
-          'Image Saved! 📸',
-          'The photo has been saved directly to your device photo gallery.'
+          'Photo Saved! 📸',
+          'The high-resolution photo has been saved directly to your device gallery.'
         );
       } else {
-        // Fallback to Expo Sharing sheet if media library permission is denied
         if (await Sharing.isAvailableAsync()) {
           await Sharing.shareAsync(downloadResult.uri);
         } else {
           Alert.alert(
-            'Downloaded',
-            'Image downloaded locally, but permission to save to Gallery was denied.'
+            'Downloaded Locally',
+            'Image downloaded to local app storage. Permission to save to device gallery was not granted.'
           );
         }
       }
     } catch (error: any) {
       console.error('Download error:', error);
-      Alert.alert('Download Error', 'Could not save image to gallery. Please try again.');
+      try {
+        const fallbackUrl = `https://picsum.photos/id/${imageData.id}/800/600`;
+        const fileUri = `${FileSystem.documentDirectory}fotoowl_${imageData.id}_alt.jpg`;
+        const downloadResult = await FileSystem.downloadAsync(fallbackUrl, fileUri);
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(downloadResult.uri);
+        }
+      } catch (fallbackErr) {
+        Alert.alert('Download Error', 'Could not save image to gallery. Please check internet connection.');
+      }
     } finally {
       setDownloading(false);
     }
@@ -101,105 +107,126 @@ export default function ImageDetailsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#111111" />
-        <Text style={styles.loadingText}>Loading image details...</Text>
+      <SafeAreaView className="flex-1 justify-center items-center bg-white" edges={['top']}>
+        <ActivityIndicator size="large" color="#0F172A" />
+        <Text className="mt-3 text-sm font-semibold text-slate-500">Loading photo details...</Text>
       </SafeAreaView>
     );
   }
 
   if (!imageData) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <SafeAreaView className="flex-1 justify-center items-center bg-white" edges={['top']}>
         <Ionicons name="alert-circle-outline" size={48} color="#E53935" />
-        <Text style={styles.errorText}>Image not found</Text>
-        <TouchableOpacity style={styles.backButtonInline} onPress={() => router.back()}>
-          <Text style={styles.backButtonInlineText}>Go Back</Text>
+        <Text className="text-lg font-bold text-slate-900 mt-3">Photo Not Found</Text>
+        <TouchableOpacity className="mt-4 bg-slate-900 px-5 py-3 rounded-xl" onPress={() => router.back()}>
+          <Text className="text-white text-sm font-bold">Go Back to Gallery</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
-  const fullResolutionUrl = `https://picsum.photos/id/${imageData.id}/1200/800`;
+  const previewUrl = `https://picsum.photos/id/${imageData.id}/800/600`;
   const aspectRatio = (imageData.width / imageData.height).toFixed(2);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
       {/* Top Header Bar */}
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.iconCircle} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#111111" />
+      <View className="flex-row items-center justify-between px-4 py-2 bg-white border-b border-slate-200/80">
+        <TouchableOpacity
+          className="w-9 h-9 rounded-full bg-slate-100 items-center justify-center"
+          onPress={() => router.back()}
+        >
+          <Ionicons name="chevron-back" size={22} color="#0F172A" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          Photo #{imageData.id}
-        </Text>
+        <Text className="text-base font-bold text-slate-900">Photo Details</Text>
 
         <TouchableOpacity
-          style={styles.iconCircle}
+          className="w-9 h-9 rounded-full bg-slate-100 items-center justify-center"
           onPress={() => id && toggleFavorite(id)}
         >
           <Ionicons
             name={favorited ? 'heart' : 'heart-outline'}
             size={22}
-            color={favorited ? '#E53935' : '#111111'}
+            color={favorited ? '#E53935' : '#0F172A'}
           />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Full Image Preview */}
-        <View style={styles.imagePreviewContainer}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        {/* Full Image Preview Container - Click to expand */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => setIsFullScreen(true)}
+          style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH * 0.78 }}
+          className="bg-slate-950 relative"
+        >
           <Image
-            source={{ uri: fullResolutionUrl }}
-            style={styles.fullImage}
+            source={{ uri: previewUrl }}
+            className="w-full h-full"
             contentFit="cover"
-            transition={300}
+            transition={200}
+            cachePolicy="memory-disk"
+            onLoadEnd={() => setImgLoading(false)}
+            onError={() => setImgLoading(false)}
           />
-        </View>
+          {imgLoading && (
+            <View pointerEvents="none" className="absolute inset-0 bg-slate-900/60 items-center justify-center z-10">
+              <ActivityIndicator size="large" color="#FFFFFF" />
+            </View>
+          )}
+          <View className="absolute bottom-3 right-3 flex-row items-center gap-1 bg-slate-950/70 px-3 py-1.5 rounded-full border border-white/20">
+            <Ionicons name="expand-outline" size={14} color="#FFFFFF" />
+            <Text className="text-white text-xs font-bold">Tap for Fullscreen</Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Details Card */}
-        <View style={styles.detailsCard}>
-          <View style={styles.authorRow}>
-            <View style={styles.authorAvatar}>
-              <Ionicons name="camera-outline" size={24} color="#FFFFFF" />
+        <View className="m-4 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm">
+          {/* Photographer Information */}
+          <View className="flex-row items-center gap-3.5">
+            <View className="w-12 h-12 rounded-2xl bg-slate-900 items-center justify-center shadow-sm">
+              <Ionicons name="camera" size={22} color="#FFFFFF" />
             </View>
 
-            <View style={{ flex: 1 }}>
-              <Text style={styles.authorTitle}>Author</Text>
-              <Text style={styles.authorName}>{imageData.author}</Text>
+            <View className="flex-1">
+              <Text className="text-xs text-slate-400 font-bold uppercase tracking-wider">Photographer</Text>
+              <Text className="text-lg font-black text-slate-900 mt-0.5">{imageData.author}</Text>
             </View>
           </View>
 
-          <View style={styles.divider} />
+          <View className="h-px bg-slate-100 my-4" />
 
           {/* Specs Grid */}
-          <Text style={styles.specSectionTitle}>Image Specifications</Text>
+          <Text className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Photo Specs</Text>
 
-          <View style={styles.specGrid}>
-            <View style={styles.specItem}>
-              <Ionicons name="resize-outline" size={18} color="#718096" />
-              <Text style={styles.specLabel}>Width</Text>
-              <Text style={styles.specValue}>{imageData.width} px</Text>
+          <View className="flex-row gap-2.5 mb-5">
+            <View className="flex-1 bg-slate-50 rounded-2xl p-3 items-center border border-slate-200/70">
+              <Ionicons name="resize-outline" size={18} color="#64748B" />
+              <Text className="text-xs font-semibold text-slate-400 mt-1">Width</Text>
+              <Text className="text-sm font-black text-slate-900 mt-0.5">{imageData.width} px</Text>
             </View>
 
-            <View style={styles.specItem}>
-              <Ionicons name="swap-vertical-outline" size={18} color="#718096" />
-              <Text style={styles.specLabel}>Height</Text>
-              <Text style={styles.specValue}>{imageData.height} px</Text>
+            <View className="flex-1 bg-slate-50 rounded-2xl p-3 items-center border border-slate-200/70">
+              <Ionicons name="swap-vertical-outline" size={18} color="#64748B" />
+              <Text className="text-xs font-semibold text-slate-400 mt-1">Height</Text>
+              <Text className="text-sm font-black text-slate-900 mt-0.5">{imageData.height} px</Text>
             </View>
 
-            <View style={styles.specItem}>
-              <Ionicons name="crop-outline" size={18} color="#718096" />
-              <Text style={styles.specLabel}>Aspect Ratio</Text>
-              <Text style={styles.specValue}>{aspectRatio}:1</Text>
+            <View className="flex-1 bg-slate-50 rounded-2xl p-3 items-center border border-slate-200/70">
+              <Ionicons name="crop-outline" size={18} color="#64748B" />
+              <Text className="text-xs font-semibold text-slate-400 mt-1">Ratio</Text>
+              <Text className="text-sm font-black text-slate-900 mt-0.5">{aspectRatio}:1</Text>
             </View>
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.actionRow}>
+          <View className="gap-2.5">
             <TouchableOpacity
-              style={[styles.downloadButton, downloading && styles.buttonDisabled]}
+              className={`flex-row items-center justify-center gap-2.5 bg-slate-900 py-4 rounded-2xl shadow-sm ${
+                downloading ? 'opacity-60' : ''
+              }`}
               onPress={handleDownload}
               disabled={downloading}
             >
@@ -208,176 +235,28 @@ export default function ImageDetailsScreen() {
               ) : (
                 <>
                   <Ionicons name="download-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.downloadButtonText}>Download to Device</Text>
+                  <Text className="text-white text-sm font-black">Save to Device Gallery</Text>
                 </>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-row items-center justify-center gap-2 bg-slate-100 py-3.5 rounded-2xl"
+              onPress={() => setIsFullScreen(true)}
+            >
+              <Ionicons name="expand-outline" size={18} color="#0F172A" />
+              <Text className="text-slate-900 text-sm font-bold">Open Lightbox Viewer</Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+
+      {/* Fullscreen Lightbox Modal */}
+      <FullScreenImageViewer
+        visible={isFullScreen}
+        imageData={imageData}
+        onClose={() => setIsFullScreen(false)}
+      />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#666666',
-  },
-  errorText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111111',
-    marginTop: 12,
-  },
-  backButtonInline: {
-    marginTop: 16,
-    backgroundColor: '#111111',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  backButtonInlineText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#EDF2F7',
-  },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F7FAFC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1A202C',
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  imagePreviewContainer: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_WIDTH * 0.75,
-    backgroundColor: '#1A202C',
-  },
-  fullImage: {
-    width: '100%',
-    height: '100%',
-  },
-  detailsCard: {
-    margin: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  authorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  authorAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#111111',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  authorTitle: {
-    fontSize: 12,
-    color: '#718096',
-    fontWeight: '600',
-  },
-  authorName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1A202C',
-    marginTop: 2,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#EDF2F7',
-    marginVertical: 16,
-  },
-  specSectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#2D3748',
-    marginBottom: 12,
-  },
-  specGrid: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
-  },
-  specItem: {
-    flex: 1,
-    backgroundColor: '#F7FAFC',
-    borderRadius: 10,
-    padding: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#EDF2F7',
-  },
-  specLabel: {
-    fontSize: 11,
-    color: '#718096',
-    marginTop: 4,
-  },
-  specValue: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#1A202C',
-    marginTop: 2,
-  },
-  actionRow: {
-    gap: 12,
-  },
-  downloadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#111111',
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  downloadButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-});

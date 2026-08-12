@@ -1,5 +1,6 @@
+import '../global.css';
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 
@@ -15,18 +16,18 @@ export default function RootLayout() {
   useEffect(() => {
     if (isLoading) return;
 
-    const inTabsGroup = segments[0] === '(tabs)';
+    const inAuthGroup = segments[0] === 'login' || segments[0] === 'register';
 
-    if (isAuthenticated && !inTabsGroup) {
+    if (isAuthenticated && inAuthGroup) {
       router.replace('/(tabs)/home');
-    } else if (!isAuthenticated && inTabsGroup) {
+    } else if (!isAuthenticated && !inAuthGroup) {
       router.replace('/login');
     }
   }, [isAuthenticated, isLoading, segments]);
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#111111" />
       </View>
     );
@@ -34,12 +35,3 @@ export default function RootLayout() {
 
   return <Slot />;
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-});
