@@ -10,7 +10,10 @@ import { useGalleryStore } from '@/store/galleryStore';
 import { PicsumImage } from '@/types/image';
 
 export default function FavoritesScreen() {
-  const { images, favorites, toggleFavorite, loadFavorites } = useGalleryStore();
+  const images = useGalleryStore((state) => state.images);
+  const favorites = useGalleryStore((state) => state.favorites);
+  const toggleFavorite = useGalleryStore((state) => state.toggleFavorite);
+  const loadFavorites = useGalleryStore((state) => state.loadFavorites);
   const { searchQuery, debouncedQuery, setSearchQuery, clearSearch } = useSearch('', 300);
 
   useEffect(() => {

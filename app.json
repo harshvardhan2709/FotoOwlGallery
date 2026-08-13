@@ -8,7 +8,8 @@
     "scheme": "fotoowlgallery",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.harsh2004.FotoOwlGallery"
     },
     "android": {
       "adaptiveIcon": {
@@ -49,7 +50,8 @@
           "photosPermission": "Allow FotoOwl to save photos to your gallery.",
           "savePhotosPermission": "Allow FotoOwl to save photos to your gallery."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

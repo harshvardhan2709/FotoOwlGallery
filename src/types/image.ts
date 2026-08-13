@@ -8,6 +8,7 @@ export interface PicsumImage {
 }
 
 export type AuthorFilter = "ALL" | "A-M" | "N-Z";
+export type SortOrder = "NONE" | "A-Z" | "Z-A";
 
 export interface GalleryState {
   images: PicsumImage[];
@@ -29,6 +30,7 @@ export interface GalleryState {
 
   searchQuery: string;
   authorFilter: AuthorFilter;
+  sortOrder: SortOrder;
 
   loadInitialImages: (force?: boolean) => Promise<void>;
   loadMoreImages: () => Promise<void>;
@@ -36,6 +38,7 @@ export interface GalleryState {
 
   setSearchQuery: (query: string) => void;
   setAuthorFilter: (filter: AuthorFilter) => void;
+  setSortOrder: (sort: SortOrder) => void;
 
   toggleFavorite: (imageId: string) => Promise<void>;
   loadFavorites: () => Promise<void>;

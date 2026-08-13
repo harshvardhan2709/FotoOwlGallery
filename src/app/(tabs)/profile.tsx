@@ -75,7 +75,7 @@ export default function ProfileScreen() {
       });
       setIsEditing(false);
       Alert.alert('Success', 'Your profile has been updated.');
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update profile.');
     } finally {
       setIsSaving(false);

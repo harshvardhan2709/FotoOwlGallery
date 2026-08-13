@@ -5,13 +5,16 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 
 export default function RootLayout() {
-  const { isAuthenticated, isLoading, loadSession } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const loadSession = useAuthStore((state) => state.loadSession);
+
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
     loadSession();
-  }, []);
+  }, [loadSession]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -23,7 +26,7 @@ export default function RootLayout() {
     } else if (!isAuthenticated && !inAuthGroup) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, segments]);
+  }, [isAuthenticated, isLoading, router, segments]);
 
   if (isLoading) {
     return (

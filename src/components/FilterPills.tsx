@@ -1,19 +1,18 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { AuthorFilter } from '@/types/image';
 
-export interface FilterOption {
+export interface FilterOption<T extends string = string> {
   label: string;
-  value: AuthorFilter;
+  value: T;
 }
 
-export interface FilterPillsProps {
-  options: FilterOption[];
-  selectedValue: AuthorFilter;
-  onSelect: (value: AuthorFilter) => void;
+export interface FilterPillsProps<T extends string = string> {
+  options: FilterOption<T>[];
+  selectedValue: T;
+  onSelect: (value: T) => void;
 }
 
-export const FilterPills: React.FC<FilterPillsProps> = ({ options, selectedValue, onSelect }) => {
+export function FilterPills<T extends string = string>({ options, selectedValue, onSelect }: FilterPillsProps<T>) {
   return (
     <View className="flex-row items-center gap-2">
       {options.map((item) => {
@@ -35,4 +34,4 @@ export const FilterPills: React.FC<FilterPillsProps> = ({ options, selectedValue
       })}
     </View>
   );
-};
+}

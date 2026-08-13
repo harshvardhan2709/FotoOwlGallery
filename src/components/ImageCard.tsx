@@ -19,7 +19,7 @@ export interface ImageCardProps {
   onToggleFavorite: (id: string) => void;
 }
 
-export const ImageCard = React.memo(({ item, isFav, onToggleFavorite }: ImageCardProps) => {
+const ImageCardComponent = ({ item, isFav, onToggleFavorite }: ImageCardProps) => {
   const thumbnailUrl = `https://picsum.photos/id/${item.id}/400/300.jpg`;
 
   return (
@@ -62,4 +62,8 @@ export const ImageCard = React.memo(({ item, isFav, onToggleFavorite }: ImageCar
       </TouchableOpacity>
     </View>
   );
-});
+};
+
+ImageCardComponent.displayName = 'ImageCard';
+
+export const ImageCard = React.memo(ImageCardComponent);

@@ -2,7 +2,7 @@ import { PicsumImage } from '@/types/image';
 import { mediaService } from '@/services/mediaService';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -31,11 +31,15 @@ export const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   const [imgLoading, setImgLoading] = useState(true);
 
   // Reset loading state when modal becomes visible or image changes
-  useEffect(() => {
-    if (visible) {
+  const [prevKey, setPrevKey] = useState<string | null>(null);
+  const currentKey = visible && imageData ? imageData.id : null;
+
+  if (currentKey !== prevKey) {
+    setPrevKey(currentKey);
+    if (currentKey !== null) {
       setImgLoading(true);
     }
-  }, [visible, imageData?.id]);
+  }
 
   if (!imageData) return null;
 

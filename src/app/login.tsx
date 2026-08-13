@@ -47,7 +47,7 @@ export default function LoginScreen() {
       }
 
       router.replace('/(tabs)/home');
-    } catch (error) {
+    } catch {
       setErrorMessage('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);

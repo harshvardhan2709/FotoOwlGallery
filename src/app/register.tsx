@@ -7,7 +7,6 @@ import {
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -93,7 +92,7 @@ export default function RegisterScreen() {
           },
         ]
       );
-    } catch (error) {
+    } catch {
       setErrorMessage('Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);

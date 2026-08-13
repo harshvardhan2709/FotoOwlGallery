@@ -1,6 +1,6 @@
+import React, { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
@@ -19,10 +19,12 @@ import { PicsumImage } from '@/types/image';
 
 export default function ImageDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { images, toggleFavorite, isFavorite } = useGalleryStore();
+  const images = useGalleryStore((state) => state.images);
+  const toggleFavorite = useGalleryStore((state) => state.toggleFavorite);
+  const isFavorite = useGalleryStore((state) => state.isFavorite);
 
-  const [imageData, setImageData] = useState<PicsumImage | null>(null);
-  const [loading, setLoading] = useState(true);
+  const existingImage = useMemo(() => images.find((img) => img.id === id), [images, id]);
+  const [remoteImage, setRemoteImage] = useState<PicsumImage | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -47,27 +49,26 @@ export default function ImageDetailsScreen() {
   }, [isFullScreen]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || existingImage) return;
 
-    const existing = images.find((img) => img.id === id);
-    if (existing) {
-      setImageData(existing);
-      setLoading(false);
-    } else {
-      setLoading(true);
-      api
-        .fetchImageById(id)
-        .then((data) => {
-          setImageData(data);
-        })
-        .catch((err) => {
-          console.error('Failed to fetch image details:', err);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [id, images]);
+    let isMounted = true;
+
+    api
+      .fetchImageById(id)
+      .then((data) => {
+        if (isMounted) setRemoteImage(data);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch image details:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, existingImage]);
+
+  const imageData = existingImage || remoteImage;
+  const loading = !existingImage && !remoteImage;
 
   const handleDownload = async () => {
     if (!imageData) return;

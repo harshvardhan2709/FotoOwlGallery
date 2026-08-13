@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { api } from "@/services/api";
 import { storage } from "@/services/storage";
 import { useAuthStore } from "@/store/authStore";
-import { AuthorFilter, GalleryState } from "@/types/image";
+import { AuthorFilter, GalleryState, SortOrder } from "@/types/image";
 
 export const useGalleryStore = create<GalleryState>((set, get) => ({
   // --------------------------------------------------
@@ -29,6 +29,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
 
   searchQuery: "",
   authorFilter: "ALL",
+  sortOrder: "NONE",
 
   // --------------------------------------------------
   // INITIAL LOAD
@@ -307,6 +308,16 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   setAuthorFilter: (filter: AuthorFilter) => {
     set({
       authorFilter: filter,
+    });
+  },
+
+  // --------------------------------------------------
+  // SORT ORDER
+  // --------------------------------------------------
+
+  setSortOrder: (sort: SortOrder) => {
+    set({
+      sortOrder: sort,
     });
   },
 
