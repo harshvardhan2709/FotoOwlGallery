@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import { PicsumImage } from '@/types/image';
+import { mediaService } from '@/services/mediaService';
+import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Dimensions,
   Modal,
   StatusBar,
@@ -10,12 +13,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
-import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system/legacy';
-import * as MediaLibrary from 'expo-media-library/legacy';
-import * as Sharing from 'expo-sharing';
-import { PicsumImage } from '@/types/image';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -33,6 +30,13 @@ export const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   const [downloading, setDownloading] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
 
+  // Reset loading state when modal becomes visible or image changes
+  useEffect(() => {
+    if (visible) {
+      setImgLoading(true);
+    }
+  }, [visible, imageData?.id]);
+
   if (!imageData) return null;
 
   const fullResolutionUrl = imageData.download_url || `https://picsum.photos/id/${imageData.id}/1200/800`;
@@ -40,49 +44,14 @@ export const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   const handleDownload = async () => {
     try {
       setDownloading(true);
-      const fileUri = `${FileSystem.documentDirectory}fotoowl_${imageData.id}_full.jpg`;
-      const downloadResult = await FileSystem.downloadAsync(fullResolutionUrl, fileUri);
-      const permission = await MediaLibrary.requestPermissionsAsync();
-
-      if (permission.granted) {
-        await MediaLibrary.createAssetAsync(downloadResult.uri);
-        Alert.alert('Saved to Gallery 📸', 'The photo has been saved to your device gallery.');
-      } else {
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(downloadResult.uri);
-        } else {
-          Alert.alert('Downloaded', 'Photo downloaded to app local storage.');
-        }
-      }
-    } catch (err: any) {
-      console.error('Download error:', err);
-      try {
-        const fallbackUrl = `https://picsum.photos/id/${imageData.id}/800/600`;
-        const fileUri = `${FileSystem.documentDirectory}fotoowl_${imageData.id}_alt.jpg`;
-        const res = await FileSystem.downloadAsync(fallbackUrl, fileUri);
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(res.uri);
-        }
-      } catch (e) {
-        Alert.alert('Download Error', 'Could not save image to gallery. Please try again.');
-      }
+      await mediaService.downloadAndSaveImage(imageData);
     } finally {
       setDownloading(false);
     }
   };
 
   const handleShare = async () => {
-    try {
-      if (await Sharing.isAvailableAsync()) {
-        const fileUri = `${FileSystem.documentDirectory}fotoowl_share_${imageData.id}.jpg`;
-        const downloadResult = await FileSystem.downloadAsync(fullResolutionUrl, fileUri);
-        await Sharing.shareAsync(downloadResult.uri);
-      } else {
-        Alert.alert('Share', `Share link: https://picsum.photos/id/${imageData.id}/800/600`);
-      }
-    } catch (err: any) {
-      console.error('Share error:', err);
-    }
+    await mediaService.shareImage(imageData);
   };
 
   return (

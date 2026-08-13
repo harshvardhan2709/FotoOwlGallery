@@ -1,21 +1,20 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
+import { InputField } from '@/components';
 import { storage } from '@/services/storage';
 import { useAuthStore } from '@/store/authStore';
-import { InputField } from '@/components';
 
 export default function LoginScreen() {
   const login = useAuthStore((state) => state.login);
@@ -125,30 +124,29 @@ export default function LoginScreen() {
             />
           </View>
 
-            {/* Submit Button */}
-            <TouchableOpacity
-              className={`h-13 rounded-xl bg-black items-center justify-center mt-6 shadow-md shadow-black/10 ${
-                isSubmitting ? 'opacity-60' : ''
+          {/* Submit Button */}
+          <TouchableOpacity
+            className={`h-13 rounded-xl bg-black items-center justify-center mt-6 shadow-md shadow-black/10 ${isSubmitting ? 'opacity-60' : ''
               }`}
-              onPress={handleLogin}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text className="text-white text-base font-bold">Sign In</Text>
-              )}
-            </TouchableOpacity>
+            onPress={handleLogin}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text className="text-white text-base font-bold">Sign In</Text>
+            )}
+          </TouchableOpacity>
 
-            {/* Quick Demo Credentials Action */}
-            <TouchableOpacity className="flex-row items-center justify-center mt-3.5 py-2 gap-1.5" onPress={fillDemoAccount}>
-              <Ionicons name="flash-outline" size={16} color="#4A5568" />
-              <Text className="text-gray-600 text-sm font-semibold">Auto-fill Credentials</Text>
-            </TouchableOpacity>
+          {/* Quick Demo Credentials Action */}
+          <TouchableOpacity className="flex-row items-center justify-center mt-3.5 py-2 gap-1.5" onPress={fillDemoAccount}>
+            <Ionicons name="flash-outline" size={16} color="#4A5568" />
+            <Text className="text-gray-600 text-sm font-semibold">Auto-fill Credentials</Text>
+          </TouchableOpacity>
 
           {/* Registration Link Footer */}
           <View className="items-center gap-1.5">
-            <Text className="text-sm text-gray-500">Don't have an account?</Text>
+            <Text className="text-sm text-gray-500">Don&apos;t have an account?</Text>
             <TouchableOpacity onPress={() => router.push('/register')}>
               <Text className="text-base font-bold text-black">Create an Account</Text>
             </TouchableOpacity>

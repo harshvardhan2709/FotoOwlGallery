@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import { api } from "@/services/api";
 import { storage } from "@/services/storage";
+import { useAuthStore } from "@/store/authStore";
 import { AuthorFilter, GalleryState } from "@/types/image";
 
 export const useGalleryStore = create<GalleryState>((set, get) => ({
@@ -52,7 +53,8 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     // a forced reload, only restore favorites.
     if (!force && state.images.length > 0) {
       try {
-        const storedFavorites = await storage.getFavorites();
+        const userEmail = useAuthStore.getState().user?.email;
+        const storedFavorites = await storage.getFavorites(userEmail);
 
         set({
           favorites: storedFavorites,
@@ -70,9 +72,10 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     });
 
     try {
+      const userEmail = useAuthStore.getState().user?.email;
       const [fetchedImages, storedFavorites] = await Promise.all([
         api.fetchImages(1, 20),
-        storage.getFavorites(),
+        storage.getFavorites(userEmail),
       ]);
 
       set({
@@ -255,9 +258,10 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     });
 
     try {
+      const userEmail = useAuthStore.getState().user?.email;
       const [fetchedImages, storedFavorites] = await Promise.all([
         api.fetchImages(1, 20),
-        storage.getFavorites(),
+        storage.getFavorites(userEmail),
       ]);
 
       set({
@@ -312,7 +316,8 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
 
   loadFavorites: async () => {
     try {
-      const storedFavorites = await storage.getFavorites();
+      const userEmail = useAuthStore.getState().user?.email;
+      const storedFavorites = await storage.getFavorites(userEmail);
 
       set({
         favorites: storedFavorites,
@@ -343,7 +348,8 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     });
 
     try {
-      await storage.setFavorites(updatedFavorites);
+      const userEmail = useAuthStore.getState().user?.email;
+      await storage.setFavorites(updatedFavorites, userEmail);
     } catch (error) {
       console.error("[Gallery] Failed to save favorite:", error);
     }

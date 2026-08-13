@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useCallback, useEffect, useMemo } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
-import { useGalleryStore } from '@/store/galleryStore';
+import { ImageCard, SearchBar } from '@/components';
 import { useSearch } from '@/hooks/useSearch';
+import { useGalleryStore } from '@/store/galleryStore';
 import { PicsumImage } from '@/types/image';
-import { FavoriteCard, SearchBar } from '@/components';
 
 export default function FavoritesScreen() {
   const { images, favorites, toggleFavorite, loadFavorites } = useGalleryStore();
@@ -15,7 +15,7 @@ export default function FavoritesScreen() {
 
   useEffect(() => {
     loadFavorites();
-  }, []);
+  }, [loadFavorites]);
 
   const favoriteImages = useMemo(() => {
     const favs = images.filter((img) => favorites.includes(img.id));
@@ -27,7 +27,7 @@ export default function FavoritesScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: PicsumImage }) => (
-      <FavoriteCard item={item} onToggleFavorite={toggleFavorite} />
+      <ImageCard item={item} isFav={true} onToggleFavorite={toggleFavorite} />
     ),
     [toggleFavorite]
   );

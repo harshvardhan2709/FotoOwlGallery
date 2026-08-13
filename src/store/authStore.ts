@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { storage } from "@/services/storage";
+import { useGalleryStore } from "@/store/galleryStore";
 import { AuthState, User } from "@/types/auth";
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -9,6 +10,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   register: async (user: User) => {
     await storage.setUser(user);
+    await storage.setFavorites([], user.email);
+    useGalleryStore.setState({ favorites: [] });
 
     set({
       user,
@@ -18,7 +21,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email: string, password: string) => {
-    const storedUser = await storage.getUser();
+    const storedUser = await storage.getUser(email);
 
     if (!storedUser) {
       return false;
@@ -32,6 +35,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return false;
     }
 
+    await storage.setUser(storedUser);
     await storage.setSession(true);
 
     set({
@@ -40,11 +44,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isLoading: false,
     });
 
+    await useGalleryStore.getState().loadFavorites();
+
     return true;
   },
 
   logout: async () => {
     await storage.clearSession();
+    useGalleryStore.setState({ favorites: [] });
 
     set({
       user: null,
@@ -60,11 +67,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         storage.getSession(),
       ]);
 
+      const isAuth = Boolean(user && isAuthenticated);
+
       set({
         user,
-        isAuthenticated: Boolean(user && isAuthenticated),
+        isAuthenticated: isAuth,
         isLoading: false,
       });
+
+      if (isAuth && user) {
+        await useGalleryStore.getState().loadFavorites();
+      } else {
+        useGalleryStore.setState({ favorites: [] });
+      }
     } catch (error) {
       console.error("Failed to load session:", error);
 
@@ -73,6 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: false,
         isLoading: false,
       });
+      useGalleryStore.setState({ favorites: [] });
     }
   },
 

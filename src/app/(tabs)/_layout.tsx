@@ -1,13 +1,17 @@
-import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <>
       <StatusBar style="dark" />
       <Tabs
+        backBehavior="firstRoute"
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: '#0F172A',
@@ -17,18 +21,19 @@ export default function TabLayout() {
             borderTopWidth: 1,
             borderTopColor: '#F1F5F9',
             height: Platform.OS === 'ios' ? 88 : 64,
-            paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-            paddingTop: 8,
-            elevation: 8,
+            paddingBottom: Math.max(insets.bottom, Platform.OS === 'ios' ? 28 : 10),
+            paddingTop: 1,
+            elevation: 1,
             shadowColor: '#0F172A',
             shadowOffset: { width: 0, height: -3 },
             shadowOpacity: 0.05,
             shadowRadius: 8,
           },
           tabBarLabelStyle: {
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: '700',
             marginTop: 2,
+            marginBottom: 2,
           },
         }}
       >

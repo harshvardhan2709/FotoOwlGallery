@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -39,6 +40,20 @@ export default function RegisterScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const onBackPress = () => {
+      if (router.canGoBack()) {
+        router.back();
+        return true;
+      }
+      router.replace('/login');
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, []);
+
   const updateField = <K extends keyof RegistrationData>(
     field: K,
     value: RegistrationData[K]
@@ -69,7 +84,7 @@ export default function RegisterScreen() {
       });
 
       Alert.alert(
-        'Account Created! 🎉',
+        'Account Created!',
         'Your registration was successful. Please log in to continue.',
         [
           {

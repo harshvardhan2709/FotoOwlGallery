@@ -1,7 +1,7 @@
 import '../global.css';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 
 export default function RootLayout() {
@@ -33,5 +33,23 @@ export default function RootLayout() {
     );
   }
 
-  return <Slot />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+      }}
+    >
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="image/[id]"
+        options={{ headerShown: false, animation: 'fade_from_bottom' }}
+      />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="register"
+        options={{ headerShown: false, animation: 'slide_from_right' }}
+      />
+    </Stack>
+  );
 }
