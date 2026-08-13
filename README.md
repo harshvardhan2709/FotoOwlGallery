@@ -1,7 +1,6 @@
 
 # 🦉 FotoOwl Gallery
 
-A React Native mobile gallery application built as part of the **React Native Intern Assignment**.
 
 FotoOwl Gallery demonstrates user authentication, session persistence, profile management, centralized state management, API integration, image search and filtering, infinite scrolling, persistent favorites, full-screen image viewing, device gallery downloads, and native image sharing.
 
@@ -27,7 +26,6 @@ The application was developed to demonstrate:
 - Reusable and maintainable components
 - Native device functionality
 
-The implementation follows the assignment requirements while also including several optional bonus features.
 
 ---
 
@@ -230,7 +228,6 @@ expo-sharing
 
 Users can share image content through the device's available sharing options.
 
-This is implemented as an optional bonus feature from the assignment.
 
 ---
 
@@ -274,7 +271,6 @@ Android hardware back navigation is handled for detail and full-screen views so 
 
 # ⭐ Bonus Features Implemented
 
-The assignment provides several optional bonus features.
 
 FotoOwl Gallery implements the following:
 
@@ -713,7 +709,7 @@ Before submission, the following areas should be tested:
 
 # 📦 APK
 
-The assignment prefers an Android APK for submission.
+The  prefers an Android APK for submission.
 
 The application can be built using **EAS Build**.
 
@@ -731,14 +727,14 @@ The resulting APK can be downloaded from the Expo EAS build page and installed d
 
 The following implementation assumptions were made:
 
-1. Authentication is implemented locally because the assignment specifies validating credentials against registered user data stored locally.
+1. Authentication is implemented locally because the  specifies validating credentials against registered user data stored locally.
 2. AsyncStorage is used for user data, session state, and favorite IDs.
 3. Images are fetched from the public Lorem Picsum API.
 4. Pagination loads images incrementally as the user reaches the end of the current gallery.
-5. Author filtering is implemented using the assignment-provided `All`, `A-M`, and `N-Z` ranges.
+5. Author filtering is implemented using the -provided `All`, `A-M`, and `N-Z` ranges.
 6. Image download requires device media-library permission.
 7. Native sharing availability depends on the capabilities of the user's device.
-8. The application does not use a remote authentication backend because one is not required by the assignment.
+8. The application does not use a remote authentication backend because one is not required by the .
 
 ---
 
