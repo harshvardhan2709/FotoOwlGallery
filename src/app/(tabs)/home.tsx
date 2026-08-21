@@ -1,4 +1,4 @@
-import {
+import React, {
   useCallback,
   useEffect,
   useMemo,
@@ -18,10 +18,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
 
-import { useGalleryStore } from "@/store/galleryStore";
+import { FilterPills, ImageCard, SearchBar } from "@/components";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useGalleryStore } from "@/store/galleryStore";
 import { AuthorFilter, PicsumImage, SortOrder } from "@/types/image";
-import { ImageCard, SearchBar, FilterPills } from "@/components";
+
 
 const HORIZONTAL_PADDING = 16;
 
@@ -29,37 +30,37 @@ const AUTHOR_FILTERS: {
   label: string;
   value: AuthorFilter;
 }[] = [
-  {
-    label: "All",
-    value: "ALL",
-  },
-  {
-    label: "A – M",
-    value: "A-M",
-  },
-  {
-    label: "N – Z",
-    value: "N-Z",
-  },
-];
+    {
+      label: "All",
+      value: "ALL",
+    },
+    {
+      label: "A – M",
+      value: "A-M",
+    },
+    {
+      label: "N – Z",
+      value: "N-Z",
+    },
+  ];
 
 const SORT_OPTIONS: {
   label: string;
   value: SortOrder;
 }[] = [
-  {
-    label: "Default",
-    value: "NONE",
-  },
-  {
-    label: "Author A → Z",
-    value: "A-Z",
-  },
-  {
-    label: "Author Z → A",
-    value: "Z-A",
-  },
-];
+    {
+      label: "Default",
+      value: "NONE",
+    },
+    {
+      label: "Author A → Z",
+      value: "A-Z",
+    },
+    {
+      label: "Author Z → A",
+      value: "Z-A",
+    },
+  ];
 
 // ==================================================
 // HOME SCREEN
@@ -255,19 +256,19 @@ export default function HomeScreen() {
         {(searchQuery.length > 0 ||
           authorFilter !== "ALL" ||
           sortOrder !== "NONE") && (
-          <TouchableOpacity
-            className="mt-4 bg-slate-900 px-5 py-3 rounded-xl"
-            onPress={() => {
-              setSearchQuery("");
-              setAuthorFilter("ALL");
-              setSortOrder("NONE");
-            }}
-          >
-            <Text className="text-white font-bold">
-              Reset Filters & Sort
-            </Text>
-          </TouchableOpacity>
-        )}
+            <TouchableOpacity
+              className="mt-4 bg-slate-900 px-5 py-3 rounded-xl"
+              onPress={() => {
+                setSearchQuery("");
+                setAuthorFilter("ALL");
+                setSortOrder("NONE");
+              }}
+            >
+              <Text className="text-white font-bold">
+                Reset Filters & Sort
+              </Text>
+            </TouchableOpacity>
+          )}
       </View>
     );
   }, [
